@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- VẬT LIỆU (MATERIALS) -->
+  <material name="dark_grey">
+    <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+  <material name="blue">
+    <color rgba="0.0 0.0 0.8 1.0"/>
+  </material>
+
+  <!-- CHASSIS LINK -->
+  <xacro:macro name="robot_chassis">
+    <!-- base_footprint: Điểm quy chiếu trên mặt đất -->
+    <link name="base_footprint"/>
+
+    <!-- Khớp nối giữa base_footprint và base_link -->
+    <joint name="base_footprint_joint" type="fixed">
+      <parent link="base_footprint"/>
+      <child link="base_link"/>
+      <origin xyz="0.0 0.0 0.08" rpy="0.0 0.0 0.0"/>
+    </joint>
+
+    <!-- base_link: Khung gầm chính của xe -->
+    <link name="base_link">
+      <!-- Khối lượng và quán tính của khung xe -->
+      <inertial>
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        <mass value="15.0"/>
+        <inertia ixx="0.22" ixy="0.0" ixz="0.0" iyy="0.32" iyz="0.0" izz="0.45"/>
+      </inertial>
+
+      <!-- Visual cho RViz (hiển thị toàn bộ mesh nếu không cấu hình submesh) -->
+      <visual>
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://robot_description/meshes/ogv.dae"/>
+        </geometry>
+        <material name="dark_grey"/>
+      </visual>
+
+      <!-- Collision hình học đơn giản để tăng hiệu năng tính toán vật lý -->
+      <collision>
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        <geometry>
+          <box size="0.45 0.38 0.15"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Ghi đè visual trong Gazebo chỉ hiển thị submesh "Body" và "Axel" của xe -->
+    <gazebo reference="base_link">
+      <visual>
+        <visibility_flags>1</visibility_flags>
+        <geometry>
+          <mesh>
+            <uri>package://robot_description/meshes/ogv.dae</uri>
+            <submesh>
+              <name>Body</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+      </visual>
+      <!-- Thêm các phần trục bánh xe (Axels) vào visual của base_link -->
+      <visual name="AxelFL">
+        <visibility_flags>1</visibility_flags>
+        <geometry>
+          <mesh>
+            <uri>package://robot_description/meshes/ogv.dae</uri>
+            <submesh>
+              <name>AxelFL</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name="AxelFR">
+        <visibility_flags>1</visibility_flags>
+        <geometry>
+          <mesh>
+            <uri>package://robot_description/meshes/ogv.dae</uri>
+            <submesh>
+              <name>AxelFR</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name="AxelBL">
+        <visibility_flags>1</visibility_flags>
+        <geometry>
+          <mesh>
+            <uri>package://robot_description/meshes/ogv.dae</uri>
+            <submesh>
+              <name>AxelBL</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name="AxelBR">
+        <visibility_flags>1</visibility_flags>
+        <geometry>
+          <mesh>
+            <uri>package://robot_description/meshes/ogv.dae</uri>
+            <submesh>
+              <name>AxelBR</name>
+              <center>false</center>
+            </submesh>
+          </mesh>
+        </geometry>
+      </visual>
+      <mu1>0.5</mu1>
+      <mu2>0.5</mu2>
+    </gazebo>
+  </xacro:macro>
+
+</robot>

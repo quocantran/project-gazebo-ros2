@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<robot name="robot_car" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Include các module thành phần -->
+  <xacro:include filename="$(find robot_description)/urdf/chassis.xacro"/>
+  <xacro:include filename="$(find robot_description)/urdf/wheels.xacro"/>
+  <xacro:include filename="$(find robot_description)/urdf/sensors.xacro"/>
+
+  <!-- Khởi tạo các module -->
+  <xacro:robot_chassis />
+  <xacro:robot_wheels />
+  <xacro:robot_sensors />
+
+</robot>

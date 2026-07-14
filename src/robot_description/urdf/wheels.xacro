@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- MACRO ĐỊNH NGHĨA MỘT BÁNH XE -->
+  <xacro:macro name="wheel" params="prefix x y z submesh_name">
+    <link name="${prefix}_wheel">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="2.5"/>
+        <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.008" iyz="0" izz="0.005"/>
+      </inertial>
+      
+      <!-- Visual tượng trưng trong RViz (Cylinder xoay ngang) -->
+      <visual>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        <geometry>
+          <cylinder radius="0.07" length="0.05"/>
+        </geometry>
+        <material name="blue"/>
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        <geometry>
+          <cylinder radius="0.07" length="0.05"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Khớp quay bánh xe -->
+    <joint name="${prefix}_wheel_joint" type="revolute">
+      <parent link="base_link"/>
+      <child link="${prefix}_wheel"/>
+      <origin xyz="${x} ${y} ${z}" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit effort="100" velocity="20" lower="-1e18" upper="1e18"/>
+      <dynamics damping="0.1" friction="0.05"/>
+    </joint>
+
+    <!-- Liên kết visual mesh chất lượng cao trong Gazebo và định vị tâm xoay -->
+    <gazebo reference="${prefix}_wheel">
+      <visual>
+        <visibility_flags>1</visibility_flags>
+        <geometry>
+          <mesh>
+            <uri>package://robot_description/meshes/ogv.dae</uri>
+            <submesh>
+              <name>${submesh_name}</name>
+              <center>true</center>
+            </submesh>
+          </mesh>
+        </geometry>
+      </visual>
+      <mu1>0.8</mu1>
+      <mu2>0.8</mu2>
+      <kp>1000000.0</kp>
+      <kd>100.0</kd>
+    </gazebo>
+  </xacro:macro>
+
+  <!-- MACRO KHỞI TẠO TẤT CẢ BÁNH XE VÀ DIFF DRIVE PLUGIN -->
+  <xacro:macro name="robot_wheels">
+    <!-- Spawn 4 bánh xe tương ứng với mô hình OGV -->
+    <xacro:wheel prefix="front_left"  x="0.145"  y="0.185"  z="-0.01" submesh_name="WheelFL"/>
+    <xacro:wheel prefix="front_right" x="0.145"  y="-0.185" z="-0.01" submesh_name="WheelFR"/>
+    <xacro:wheel prefix="rear_left"   x="-0.145" y="0.185"  z="-0.01" submesh_name="WheelBL"/>
+    <xacro:wheel prefix="rear_right"  x="-0.145" y="-0.185" z="-0.01" submesh_name="WheelBR"/>
+
+    <!-- Plugin điều khiển 4 bánh vi sai (DiffDrive) trong Gazebo Sim -->
+    <gazebo>
+      <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+        <!-- Cấu hình bánh bên trái (FL và RL) -->
+        <left_joint>front_left_wheel_joint</left_joint>
+        <left_joint>rear_left_wheel_joint</left_joint>
+        
+        <!-- Cấu hình bánh bên phải (FR và RR) -->
+        <right_joint>front_right_wheel_joint</right_joint>
+        <right_joint>rear_right_wheel_joint</right_joint>
+
+        <!-- Thông số động học bánh xe -->
+        <wheel_separation>0.37</wheel_separation>
+        <wheel_radius>0.07</wheel_radius>
+
+        <!-- Giới hạn gia tốc và mô-men xoắn -->
+        <max_linear_acceleration>5.0</max_linear_acceleration>
+        <max_angular_acceleration>10.0</max_angular_acceleration>
+
+        <!-- Topic cấu hình đầu vào/đầu ra -->
+        <topic>cmd_vel</topic>
+        <odom_topic>odom</odom_topic>
+        <tf_topic>tf</tf_topic>
+        
+        <!-- Xuất thông tin định vị (Odometry) -->
+        <frame_id>odom</frame_id>
+        <child_frame_id>base_footprint</child_frame_id>
+        <publish_odom>true</publish_odom>
+        <publish_odom_tf>true</publish_odom_tf>
+        <publish_wheel_tf>true</publish_wheel_tf>
+        <odom_publish_frequency>50</odom_publish_frequency>
+      </plugin>
+
+      <!-- Plugin xuất trạng thái các khớp (Joint State) để tính TF động -->
+      <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+        <topic>joint_states</topic>
+        <joint_name>front_left_wheel_joint</joint_name>
+        <joint_name>front_right_wheel_joint</joint_name>
+        <joint_name>rear_left_wheel_joint</joint_name>
+        <joint_name>rear_right_wheel_joint</joint_name>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
+</robot>

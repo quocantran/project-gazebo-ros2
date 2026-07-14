@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- SENSOR MACRO -->
+  <xacro:macro name="robot_sensors">
+    <!-- Link vật lý đại diện cho mắt đọc LiDAR -->
+    <link name="lidar_link">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.2"/>
+        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0002"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.04" length="0.03"/>
+        </geometry>
+        <material name="blue"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.04" length="0.03"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Khớp gắn chặt LiDAR lên nóc khung gầm chính -->
+    <joint name="lidar_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="lidar_link"/>
+      <!-- Đặt ở tâm khung xe, nhô lên trên nóc 0.12m -->
+      <origin xyz="0.0 0.0 0.12" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Cấu hình cảm biến Lidar trong Gazebo Sim -->
+    <gazebo reference="lidar_link">
+      <sensor name="gpu_lidar" type="gpu_lidar">
+        <pose>0 0 0 0 0 0</pose>
+        <topic>scan</topic>
+        <update_rate>10.0</update_rate>
+        <visualize>true</visualize>
+        <!--
+          visibility_mask = 2 (bit 1)
+          Cảm biến CHỈ nhìn thấy những vật thể có bit 1 trong visibility_flags.
+          - Môi trường (kệ, tường): flags = 0xFFFFFFFF (có bit 1) -> Nhìn thấy.
+          - Robot: flags = 1 (bit 0 = 1, bit 1 = 0) -> Không nhìn thấy -> Hết tự quét trúng mình!
+        -->
+        <visibility_mask>2</visibility_mask>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>360</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14159265</min_angle>
+              <max_angle>3.14159265</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.08</min>
+            <max>12.0</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <gz_frame_id>lidar_link</gz_frame_id>
+      </sensor>
+      <!-- Ẩn visual lidar_link khỏi cảm biến (flags=1, bit 0 only → GUI only) -->
+      <visual>
+        <visibility_flags>1</visibility_flags>
+      </visual>
+    </gazebo>
+  </xacro:macro>
+
+</robot>
