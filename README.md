@@ -119,38 +119,69 @@ Chạy câu lệnh sau để mở Gazebo Warehouse, Spawn robot và mở RViz2:
 ros2 launch robot_bringup simulation.launch.py
 ```
 
-### 3.3. Chạy Chế độ Điều khiển Thủ công (Manual Mode)
-Mở một terminal mới, cấu hình môi trường và chạy node Teleop bằng lệnh `ros2 run` (để nhận đúng đầu vào bàn phím từ terminal):
+### 3.3. Phân biệt `ros2 run` và `ros2 launch` (QUAN TRỌNG)
+
+Đây là 2 cách chạy node ROS2 hoàn toàn khác nhau về bản chất:
+
+| Đặc điểm | `ros2 run` | `ros2 launch` |
+|---|---|---|
+| **Chức năng** | Chạy **1 node duy nhất** trực tiếp | Chạy **nhiều node cùng lúc** theo kịch bản |
+| **Stdin (bàn phím)** | ✅ Node nhận được input trực tiếp từ terminal | ❌ Stdin bị chặn bởi launch manager |
+| **Cú pháp truyền tham số** | `--ros-args -p tên:=giá_trị` | `tên:=giá_trị` (viết tắt) |
+| **Khi nào dùng** | Node cần nhập liệu từ bàn phím (teleop), hoặc chạy đơn lẻ | Khởi chạy hệ thống phức tạp nhiều node |
+
+**Ví dụ truyền tham số:**
+```bash
+# Đúng cú pháp cho ros2 run:
+ros2 run robot_control obstacle_avoidance --ros-args -p linear_speed:=1.5 -p angular_speed:=1.5
+
+# Đúng cú pháp cho ros2 launch:
+ros2 launch robot_control autonomous.launch.py linear_speed:=1.5 angular_speed:=1.5
+
+# ❌ SAI - cú pháp launch KHÔNG hoạt động với run (tham số bị bỏ qua hoàn toàn):
+ros2 run robot_control obstacle_avoidance linear_speed:=1.5 angular_speed:=1.5
+```
+
+> **Lưu ý quan trọng**: Node `teleop_keyboard` **bắt buộc** phải chạy bằng `ros2 run` vì nó cần đọc phím bấm trực tiếp từ terminal thông qua module `termios`. Nếu chạy qua `ros2 launch`, Stdin bị chặn → node không nhận được phím bấm → không điều khiển được.
+
+### 3.4. Chạy Chế độ Điều khiển Thủ công (Manual Teleop)
+Mở một terminal **mới**, cấu hình môi trường và chạy node Teleop:
 
 ```bash
 cd ~/robot_car_ws
 source install/setup.bash
+
 # Chạy với tốc độ mặc định (Linear: 0.3 m/s, Angular: 0.5 rad/s)
 ros2 run robot_control teleop_keyboard
 
 # HOẶC tăng tốc độ di chuyển và xoay của robot (ví dụ: Linear 0.8 m/s, Angular 1.2 rad/s)
 ros2 run robot_control teleop_keyboard --ros-args -p linear_speed:=0.8 -p angular_speed:=1.2
 ```
-*Nhấp chuột vào cửa sổ terminal này và sử dụng các phím `w`, `a`, `s`, `d`, `x` để điều khiển.*
+*Nhấp chuột vào cửa sổ terminal này và sử dụng các phím `w`, `a`, `s`, `d`, `x` để điều khiển. Nhả phím → xe tự động dừng.*
 
-### 3.4. Chạy Chế độ Quỹ đạo Demo (Motion Demo Mode)
-Bạn có thể chạy node này với các hướng đi cơ bản được chỉ định sẵn qua tham số `mode` (`forward`, `backward`, `left`, `right`, `stop`):
+### 3.5. Chạy Chế độ Di chuyển Demo (Motion Demo Mode)
+Chạy node di chuyển theo hướng cơ bản được chỉ định sẵn qua tham số `mode` (`forward`, `backward`, `left`, `right`, `stop`):
 
-- Ví dụ chạy tiến thẳng về phía trước:
+- Cách 1 — Dùng `ros2 launch` (cú pháp ngắn gọn):
   ```bash
   ros2 launch robot_control motion_demo.launch.py mode:=forward linear_speed:=0.3
   ```
-- Hoặc chạy lùi lại phía sau:
+- Cách 2 — Dùng `ros2 run` (cú pháp đầy đủ):
   ```bash
-  ros2 launch robot_control motion_demo.launch.py mode:=backward linear_speed:=0.3
+  ros2 run robot_control motion_demo --ros-args -p mode:=forward -p linear_speed:=0.3
   ```
 
-### 3.5. Chạy Chế độ Tự hành Tránh vật cản (Autonomous Obstacle Avoidance)
-Kích hoạt thuật toán tự hành thông minh quét đa vùng. Bạn có thể truyền các tham số qua dòng lệnh để thay đổi tốc độ tránh vật cản:
+### 3.6. Chạy Chế độ Tự hành Tránh vật cản (Autonomous Obstacle Avoidance)
+Kích hoạt thuật toán tự hành thông minh quét đa vùng:
 
-```bash
-ros2 launch robot_control autonomous.launch.py obstacle_threshold:=0.6 linear_speed:=0.35 angular_speed:=0.7
-```
+- Cách 1 — Dùng `ros2 launch` (cú pháp ngắn gọn):
+  ```bash
+  ros2 launch robot_control autonomous.launch.py obstacle_threshold:=0.6 linear_speed:=0.35 angular_speed:=0.7
+  ```
+- Cách 2 — Dùng `ros2 run` (cú pháp đầy đủ):
+  ```bash
+  ros2 run robot_control obstacle_avoidance --ros-args -p obstacle_threshold:=0.6 -p linear_speed:=0.35 -p angular_speed:=0.7
+  ```
 *Hãy quan sát robot tự động tìm đường đi trong nhà kho, rẽ vào hướng rộng hơn và tự động lùi khi đi vào ngõ cụt của kệ hàng.*
 
 ---
@@ -166,6 +197,12 @@ ros2 launch robot_control autonomous.launch.py obstacle_threshold:=0.6 linear_sp
 
 ## 5. Hướng Dẫn Giải Quyết Sự Cố (Troubleshooting)
 
+- **Lỗi: Tham số truyền vào `ros2 run` không có tác dụng (tốc độ vẫn mặc định)**
+  *Nguyên nhân*: Cú pháp `ros2 run pkg node tên:=giá_trị` là **SAI**. Đây là cú pháp của `ros2 launch`.
+  *Giải pháp*: Sử dụng cú pháp `ros2 run pkg node --ros-args -p tên:=giá_trị -p tên2:=giá_trị2`.
+- **Lỗi: Gazebo GUI crash (OgreAxisAlignedBox assertion failed) sau khi Ctrl+C rồi chạy lại node**
+  *Nguyên nhân*: Khi Ctrl+C tắt node điều khiển, nếu lệnh dừng xe không gửi kịp qua DDS, robot tiếp tục chạy với vận tốc cuối cùng mà không có ai kiểm soát → tọa độ bay ra vô cùng (NaN) → Ogre rendering crash.
+  *Giải pháp*: Đã sửa trong code — hàm `stop_robot()` giờ gửi liên tiếp 10 lệnh dừng trong 1 giây để đảm bảo DDS truyền tải thành công. Sau khi nhấn Ctrl+C, hãy đợi thông báo "Đã dừng xe an toàn" trước khi chạy lại node mới.
 - **Lỗi: Không tìm thấy thư mục meshes hoặc hiển thị lỗi màu đỏ trong Gazebo/RViz**
   *Giải pháp*: Launch file `simulation.launch.py` đã tự động thiết lập biến môi trường `GZ_SIM_RESOURCE_PATH`. Đảm bảo rằng bạn đã chạy lệnh `source install/setup.bash` trước khi chạy launch file.
 - **Lỗi: Robot không di chuyển khi nhấn phím điều khiển**

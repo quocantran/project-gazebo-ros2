@@ -206,14 +206,19 @@ class ObstacleAvoidanceNode(Node):
         self.cmd_vel_pub.publish(twist)
 
     def stop_robot(self):
+        """Gửi lệnh dừng xe nhiều lần liên tiếp để đảm bảo DDS truyền tải thành công
+        trước khi node bị hủy. Nếu chỉ gửi 1 lần, gói tin rất dễ bị mất khi
+        context đang shutdown, khiến robot tiếp tục bay với vận tốc cuối cùng
+        → tọa độ NaN → Gazebo GUI crash."""
+        import time
         twist = Twist()
         twist.linear.x = 0.0
         twist.angular.z = 0.0
-        self.cmd_vel_pub.publish(twist)
-        self.get_logger().info("Đã dừng xe tự hành.")
-        # Thêm sleep ngắn để DDS kịp đẩy gói tin dừng xe đi trước khi Shutdown
-        import time
-        time.sleep(0.5)
+        self.get_logger().info("Đang gửi lệnh dừng xe khẩn cấp...")
+        for i in range(10):
+            self.cmd_vel_pub.publish(twist)
+            time.sleep(0.1)
+        self.get_logger().info("Đã dừng xe tự hành an toàn.")
 
 def main(args=None):
     # Tắt signal handler mặc định của rclpy để Ctrl+C không tự động shutdown context

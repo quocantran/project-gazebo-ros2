@@ -68,14 +68,16 @@ class MotionDemoNode(Node):
         self.cmd_vel_pub.publish(twist)
 
     def stop_robot(self):
+        """Gửi lệnh dừng xe nhiều lần liên tiếp để đảm bảo DDS truyền tải thành công."""
+        import time
         twist = Twist()
         twist.linear.x = 0.0
         twist.angular.z = 0.0
-        self.cmd_vel_pub.publish(twist)
+        self.get_logger().info("Đang gửi lệnh dừng xe khẩn cấp...")
+        for i in range(10):
+            self.cmd_vel_pub.publish(twist)
+            time.sleep(0.1)
         self.get_logger().info("Đã dừng xe an toàn.")
-        # Thêm sleep ngắn để DDS kịp đẩy gói tin dừng xe đi trước khi Shutdown
-        import time
-        time.sleep(0.5)
 
 def main(args=None):
     rclpy.init(args=args, signal_handler_options=SignalHandlerOptions.NO)
