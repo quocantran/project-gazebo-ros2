@@ -7,8 +7,8 @@ def generate_launch_description():
     # Khai báo các tham số đầu vào qua dòng lệnh khi chạy launch file
     mode_arg = DeclareLaunchArgument(
         'mode',
-        default_value='circle',
-        description='Kịch bản chuyển động: forward, backward, left, right, stop, circle, square, figure_eight'
+        default_value='stop',
+        description='Kịch bản chuyển động: forward, backward, left, right, stop'
     )
     
     linear_speed_arg = DeclareLaunchArgument(

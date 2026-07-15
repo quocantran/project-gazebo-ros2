@@ -82,7 +82,7 @@ Thư mục này chịu trách nhiệm khai báo cấu trúc cơ khí của robot
 ### 2.3. robot_control (Thuật toán Điều khiển)
 Chứa các thuật toán xử lý dữ liệu và ra lệnh di chuyển cho robot dưới dạng các Node Python:
 1. **`teleop_keyboard.py`**: Node cho phép người dùng bấm các phím `w`, `s`, `a`, `d`, `x` để điều khiển hướng đi trực tiếp từ terminal. Sử dụng module `termios` để bắt sự kiện bàn phím không chặn (non-blocking) và tự động khôi phục cấu hình terminal gốc khi tắt để tránh lỗi hiển thị.
-2. **`motion_demo.py`**: Node thực thi các quỹ đạo bay/chạy lập trình sẵn thông qua tham số `mode` (`circle` chạy tròn, `square` chạy hình vuông sử dụng máy trạng thái thời gian, `figure_eight` chạy hình số 8 đảo góc quay tuần hoàn).
+2. **`motion_demo.py`**: Node thực thi các hướng di chuyển cơ bản lập trình sẵn thông qua tham số `mode` (`forward`, `backward`, `left`, `right`, `stop`).
 3. **`obstacle_avoidance.py`**: Thuật toán tránh vật cản tự hành thông minh.
    - **Phân vùng quét (Sector Scanning)**: Chia góc quét Lidar 360 độ thành 3 vùng: Trước mặt (Front: $-25^\circ \to +25^\circ$), Bên trái (Left: $+25^\circ \to +80^\circ$), Bên phải (Right: $-80^\circ \to -25^\circ$).
    - **So sánh khoảng trống**: Nếu khoảng cách trước mặt ngắn hơn ngưỡng an toàn (`obstacle_threshold` mặc định $0.6$m), robot dừng lại, so sánh giá trị khoảng trống nhỏ nhất giữa bên Trái và bên Phải để rẽ vào bên rộng hơn.
@@ -120,36 +120,36 @@ ros2 launch robot_bringup simulation.launch.py
 ```
 
 ### 3.3. Chạy Chế độ Điều khiển Thủ công (Manual Mode)
-Mở một terminal mới, cấu hình môi trường và chạy node Teleop:
+Mở một terminal mới, cấu hình môi trường và chạy node Teleop bằng lệnh `ros2 run` (để nhận đúng đầu vào bàn phím từ terminal):
 
 ```bash
 cd ~/robot_car_ws
 source install/setup.bash
-ros2 launch robot_control teleop.launch.py
+# Chạy với tốc độ mặc định (Linear: 0.3 m/s, Angular: 0.5 rad/s)
+ros2 run robot_control teleop_keyboard
+
+# HOẶC tăng tốc độ di chuyển và xoay của robot (ví dụ: Linear 0.8 m/s, Angular 1.2 rad/s)
+ros2 run robot_control teleop_keyboard --ros-args -p linear_speed:=0.8 -p angular_speed:=1.2
 ```
-*Nhấp chuột vào terminal này và sử dụng các phím `w`, `a`, `s`, `d`, `x` để điều khiển.*
+*Nhấp chuột vào cửa sổ terminal này và sử dụng các phím `w`, `a`, `s`, `d`, `x` để điều khiển.*
 
 ### 3.4. Chạy Chế độ Quỹ đạo Demo (Motion Demo Mode)
-Bạn có thể thay đổi tham số `mode` trực tiếp qua dòng lệnh để kiểm tra các quỹ đạo khác nhau:
+Bạn có thể chạy node này với các hướng đi cơ bản được chỉ định sẵn qua tham số `mode` (`forward`, `backward`, `left`, `right`, `stop`):
 
-- Chạy quỹ đạo hình tròn:
+- Ví dụ chạy tiến thẳng về phía trước:
   ```bash
-  ros2 launch robot_control motion_demo.launch.py mode:=circle
+  ros2 launch robot_control motion_demo.launch.py mode:=forward linear_speed:=0.3
   ```
-- Chạy quỹ đạo hình vuông (đi thẳng -> quay 90 độ lặp lại):
+- Hoặc chạy lùi lại phía sau:
   ```bash
-  ros2 launch robot_control motion_demo.launch.py mode:=square
-  ```
-- Chạy quỹ đạo hình số 8 (đảo hướng quay liên tục):
-  ```bash
-  ros2 launch robot_control motion_demo.launch.py mode:=figure_eight
+  ros2 launch robot_control motion_demo.launch.py mode:=backward linear_speed:=0.3
   ```
 
 ### 3.5. Chạy Chế độ Tự hành Tránh vật cản (Autonomous Obstacle Avoidance)
-Kích hoạt thuật toán tự hành thông minh quét đa vùng:
+Kích hoạt thuật toán tự hành thông minh quét đa vùng. Bạn có thể truyền các tham số qua dòng lệnh để thay đổi tốc độ tránh vật cản:
 
 ```bash
-ros2 launch robot_control autonomous.launch.py obstacle_threshold:=0.6 linear_speed:=0.25
+ros2 launch robot_control autonomous.launch.py obstacle_threshold:=0.6 linear_speed:=0.35 angular_speed:=0.7
 ```
 *Hãy quan sát robot tự động tìm đường đi trong nhà kho, rẽ vào hướng rộng hơn và tự động lùi khi đi vào ngõ cụt của kệ hàng.*
 
