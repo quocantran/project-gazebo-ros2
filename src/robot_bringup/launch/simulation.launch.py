@@ -69,7 +69,10 @@ def generate_launch_description():
     )
 
     # 3b. Gazebo GUI: hiển thị 3D bằng GPU ảo VMware (Ogre 1)
-    #     Khởi chạy GUI sau server 2 giây để đảm bảo server sẵn sàng
+    #     VMware SVGA3D không tương thích Ogre2 (màn hình đen), phải dùng Ogre 1.
+    #     Lưu ý: Ogre 1 có bug crash khi click vào mesh submesh phức tạp đang quay,
+    #     đã được khắc phục bằng cách dùng cylinder đơn giản cho visual bánh xe.
+    #     Khởi chạy GUI sau server 2 giây để đảm bảo server sẵn sàng.
     gazebo_gui = TimerAction(
         period=2.0,
         actions=[

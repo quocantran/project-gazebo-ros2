@@ -200,9 +200,12 @@ Kích hoạt thuật toán tự hành thông minh quét đa vùng:
 - **Lỗi: Tham số truyền vào `ros2 run` không có tác dụng (tốc độ vẫn mặc định)**
   *Nguyên nhân*: Cú pháp `ros2 run pkg node tên:=giá_trị` là **SAI**. Đây là cú pháp của `ros2 launch`.
   *Giải pháp*: Sử dụng cú pháp `ros2 run pkg node --ros-args -p tên:=giá_trị -p tên2:=giá_trị2`.
-- **Lỗi: Gazebo GUI crash (OgreAxisAlignedBox assertion failed) sau khi Ctrl+C rồi chạy lại node**
-  *Nguyên nhân*: Khi Ctrl+C tắt node điều khiển, nếu lệnh dừng xe không gửi kịp qua DDS, robot tiếp tục chạy với vận tốc cuối cùng mà không có ai kiểm soát → tọa độ bay ra vô cùng (NaN) → Ogre rendering crash.
-  *Giải pháp*: Đã sửa trong code — hàm `stop_robot()` giờ gửi liên tiếp 10 lệnh dừng trong 1 giây để đảm bảo DDS truyền tải thành công. Sau khi nhấn Ctrl+C, hãy đợi thông báo "Đã dừng xe an toàn" trước khi chạy lại node mới.
+- **Lỗi: Gazebo GUI crash (OgreAxisAlignedBox assertion failed) khi click chuột vào robot hoặc sau Ctrl+C**
+  *Nguyên nhân*: Đây là **bug của engine Ogre 1.9**, không phải lỗi code dự án. Ogre 1 tính sai bounding box khi click vào mesh submesh phức tạp (bánh xe) đang quay liên tục, sinh ra tọa độ NaN → assertion fail → crash. Lỗi tương tự cũng xảy ra khi robot bay khỏi bản đồ do lệnh dừng xe gửi không kịp qua DDS sau khi Ctrl+C.
+  *Giải pháp đã áp dụng*:
+  (1) Visual bánh xe trong Gazebo đã được chuyển từ mesh DAE submesh sang hình trụ (cylinder) đơn giản — loại bỏ hoàn toàn lỗi click.
+  (2) Hàm `stop_robot()` gửi liên tiếp 10 lệnh dừng trong 1 giây để đảm bảo DDS truyền tải thành công.
+  (3) Bước thời gian vật lý (`max_step_size`) giảm từ 0.02s xuống 0.004s để tăng độ ổn định mô phỏng.
 - **Lỗi: Không tìm thấy thư mục meshes hoặc hiển thị lỗi màu đỏ trong Gazebo/RViz**
   *Giải pháp*: Launch file `simulation.launch.py` đã tự động thiết lập biến môi trường `GZ_SIM_RESOURCE_PATH`. Đảm bảo rằng bạn đã chạy lệnh `source install/setup.bash` trước khi chạy launch file.
 - **Lỗi: Robot không di chuyển khi nhấn phím điều khiển**

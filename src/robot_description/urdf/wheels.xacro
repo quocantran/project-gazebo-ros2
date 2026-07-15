@@ -37,19 +37,23 @@
       <dynamics damping="0.1" friction="0.05"/>
     </joint>
 
-    <!-- Liên kết visual mesh chất lượng cao trong Gazebo và định vị tâm xoay -->
+    <!-- Visual bánh xe trong Gazebo: Dùng hình trụ đơn giản thay vì mesh submesh
+         phức tạp để tránh bug Ogre 1 crash khi click chuột vào robot đang quay.
+         Bug gốc: Ogre 1.9 tính sai bounding box cho submesh có center=true khi
+         đang xoay liên tục → tọa độ NaN → assertion fail → GUI crash. -->
     <gazebo reference="${prefix}_wheel">
       <visual>
         <visibility_flags>1</visibility_flags>
         <geometry>
-          <mesh>
-            <uri>package://robot_description/meshes/ogv.dae</uri>
-            <submesh>
-              <name>${submesh_name}</name>
-              <center>true</center>
-            </submesh>
-          </mesh>
+          <cylinder>
+            <radius>0.07</radius>
+            <length>0.05</length>
+          </cylinder>
         </geometry>
+        <material>
+          <ambient>0.15 0.15 0.15 1</ambient>
+          <diffuse>0.2 0.2 0.2 1</diffuse>
+        </material>
       </visual>
       <mu1>0.8</mu1>
       <mu2>0.8</mu2>
