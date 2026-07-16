@@ -49,17 +49,6 @@ def generate_launch_description():
     # Thiết lập biến môi trường để Gazebo tìm thấy meshes cục bộ của robot
     os.environ['GZ_SIM_RESOURCE_PATH'] = os.path.join(description_share, '..')
 
-    # =========================================================================
-    # KIẾN TRÚC TÁCH GAZEBO: SERVER (headless) + GUI (hiển thị)
-    # =========================================================================
-    # Trên VMware không có GPU rời:
-    #   - Server (physics + sensor): Chạy headless, dùng software OpenGL
-    #     (LIBGL_ALWAYS_SOFTWARE=1) để ogre2 render depth buffer chính xác
-    #     cho cảm biến gpu_lidar.
-    #   - GUI (hiển thị): Dùng GPU ảo của VMware (SVGA3D) với Ogre 1
-    #     để render 3D mượt mà, không bị giật lag.
-    # =========================================================================
-
     # 3a. Gazebo Server (headless): physics + sensors
     #     Ép software rendering CHỈ cho tiến trình server
     gazebo_server = ExecuteProcess(
