@@ -1,6 +1,14 @@
 # Cấu hình ánh xạ các topic giữa ROS 2 và Gazebo Harmonic
 # World: warehouse_world | Model: robot_car
 ---
+# 0. Đồng hồ mô phỏng (clock) - BẮT BUỘC khi dùng use_sim_time: True
+#    Không có clock → robot_state_publisher sẽ bỏ qua mọi joint_states
+- ros_topic_name: "/clock"
+  gz_topic_name: "/clock"
+  ros_type_name: "rosgraph_msgs/msg/Clock"
+  gz_type_name: "gz.msgs.Clock"
+  direction: GZ_TO_ROS
+
 # 1. Điều khiển động cơ (cmd_vel) - Chiều: ROS 2 -> Gazebo
 #    DiffDrive plugin nhận cmd_vel trực tiếp (không qua world namespace)
 - ros_topic_name: "/cmd_vel"
