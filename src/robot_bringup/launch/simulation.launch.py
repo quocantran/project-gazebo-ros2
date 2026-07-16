@@ -89,18 +89,13 @@ def generate_launch_description():
         }]
     )
 
-    # 6. Bridge riêng cho joint_states (dùng command-line syntax vì YAML config
-    #    không hỗ trợ mapping gz.msgs.Model → sensor_msgs/msg/JointState)
-    joint_states_bridge_node = Node(
-        package='ros_gz_bridge',
-        executable='parameter_bridge',
-        name='joint_states_bridge',
-        arguments=[
-            '/world/warehouse_world/model/robot_car/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model'
-        ],
-        remappings=[
-            ('/world/warehouse_world/model/robot_car/joint_states', '/joint_states')
-        ],
+    # 6. Node: joint_state_publisher - Publish trạng thái khớp cho robot_state_publisher
+    #    Đọc URDF từ /robot_description, publish JointState cho các khớp revolute (bánh xe)
+    #    → robot_state_publisher tính được TF cho wheel links → RViz hiển thị đúng
+    joint_state_publisher_node = Node(
+        package='joint_state_publisher',
+        executable='joint_state_publisher',
+        name='joint_state_publisher',
         parameters=[{'use_sim_time': True}],
         output='screen'
     )
@@ -124,6 +119,7 @@ def generate_launch_description():
         gazebo_gui,
         spawn_robot_node,
         ros_gz_bridge_node,
-        joint_states_bridge_node,
+        joint_state_publisher_node,
         rviz_node
     ])
+
