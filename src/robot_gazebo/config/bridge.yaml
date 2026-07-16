@@ -31,14 +31,6 @@
   gz_type_name: "gz.msgs.Odometry"
   direction: GZ_TO_ROS
 
-# 4. Trạng thái các khớp bánh xe (joint_states) - Chiều: Gazebo -> ROS 2
-#    Plugin JointStatePublisher publish qua world namespace đầy đủ
-- ros_topic_name: "/joint_states"
-  gz_topic_name: "/world/warehouse_world/model/robot_car/joint_states"
-  ros_type_name: "sensor_msgs/msg/JointState"
-  gz_type_name: "gz.msgs.Model"
-  direction: GZ_TO_ROS
-
 # 5. Hệ trục tọa độ động (tf) - Chiều: Gazebo -> ROS 2 (Cho phép RViz hiển thị)
 #    DiffDrive plugin publish TF (odom->base_footprint) qua model namespace
 - ros_topic_name: "/tf"

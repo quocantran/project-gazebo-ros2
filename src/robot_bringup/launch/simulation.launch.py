@@ -89,7 +89,23 @@ def generate_launch_description():
         }]
     )
 
-    # 6. Khởi chạy RViz2 trực quan hóa (nếu được kích hoạt rviz:=true)
+    # 6. Bridge riêng cho joint_states (dùng command-line syntax vì YAML config
+    #    không hỗ trợ mapping gz.msgs.Model → sensor_msgs/msg/JointState)
+    joint_states_bridge_node = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        name='joint_states_bridge',
+        arguments=[
+            '/world/warehouse_world/model/robot_car/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model'
+        ],
+        remappings=[
+            ('/world/warehouse_world/model/robot_car/joint_states', '/joint_states')
+        ],
+        parameters=[{'use_sim_time': True}],
+        output='screen'
+    )
+
+    # 7. Khởi chạy RViz2 trực quan hóa (nếu được kích hoạt rviz:=true)
     rviz_config = os.path.join(description_share, 'rviz', 'view_robot.rviz')
     rviz_node = Node(
         package='rviz2',
@@ -108,5 +124,6 @@ def generate_launch_description():
         gazebo_gui,
         spawn_robot_node,
         ros_gz_bridge_node,
+        joint_states_bridge_node,
         rviz_node
     ])
